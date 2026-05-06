@@ -676,6 +676,7 @@ const typeDefs = gql`
     configuration: Configuration
     reviewsByRestaurant(restaurant: String!): ReviewsResult
     getCountryByIso(iso: String!): Country
+    coupon(coupon: String!, restaurantId: ID!): CouponResult
   }
 
   type OwnerAuthData {
@@ -741,10 +742,8 @@ const typeDefs = gql`
     # Check existence
     emailExist(email: String!): ExistUser
     phoneExist(phone: String!): ExistUser
+    # Deactivate
     Deactivate(isActive: Boolean!, email: String!): User
-    
-    # Coupon
-    coupon(coupon: String!, restaurantId: ID!): CouponResult
     
     # Chat
     sendChatMessage(orderId: ID!, message: ChatMessageInput!): ChatResult
