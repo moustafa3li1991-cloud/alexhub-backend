@@ -243,6 +243,7 @@ const typeDefs = gql`
     isActive: Boolean
     location: Location
     zone: Zone
+    notificationToken: String
   }
 
   type OrderItem {
@@ -331,6 +332,24 @@ const typeDefs = gql`
     privacyPolicy: String
     testOtp: String
     isPaidVersion: Boolean
+    skipMobileVerification: Boolean
+    skipEmailVerification: Boolean
+    skipWhatsAppOTP: Boolean
+    cloudinaryUploadUrl: String
+    cloudinaryApiKey: String
+    googlePlacesApiBaseUrl: String
+    webClientID: String
+    androidClientID: String
+    iOSClientID: String
+    expoClientID: String
+    firebaseKey: String
+    authDomain: String
+    projectId: String
+    storageBucket: String
+    msgSenderId: String
+    appId: String
+    measurementId: String
+    vapidKey: String
   }
 
   type ShopType {
@@ -354,11 +373,12 @@ const typeDefs = gql`
     _id: ID
     requestId: String
     userType: String
-    user: ID
+    user: User
     userModel: String
-    restaurant: ID
+    restaurant: Restaurant
     requestAmount: Float
     status: String
+    paymentDetails: String
     createdAt: String
   }
 
@@ -413,6 +433,33 @@ const typeDefs = gql`
     data: ChatMessage
   }
 
+  type DashboardUsers {
+    usersCount: Int
+    vendorsCount: Int
+    restaurantsCount: Int
+    ridersCount: Int
+  }
+
+  type DashboardUsersByYear {
+    usersCount: [Int]
+    vendorsCount: [Int]
+    restaurantsCount: [Int]
+    ridersCount: [Int]
+    percentageChange: DashboardPercentageChange
+  }
+
+  type DashboardPercentageChange {
+    usersPercent: Float
+    vendorsPercent: Float
+    restaurantsPercent: Float
+    ridersPercent: Float
+  }
+
+  type DashboardStats {
+    label: String
+    value: Int
+  }
+
   input OrderInput {
     food: ID!
     quantity: Int!
@@ -448,6 +495,48 @@ const typeDefs = gql`
   input ChatUserInput {
     id: ID!
     name: String!
+  }
+
+  input RestaurantInput {
+    _id: ID
+    name: String
+    image: String
+    logo: String
+    address: String
+    location: LocationInput
+    username: String
+    deliveryTime: Int
+    minimumOrder: Float
+    tax: Float
+    isActive: Boolean
+    shopType: String
+  }
+
+  input CouponInput {
+    _id: ID
+    title: String
+    discount: Int
+    enabled: Boolean
+    restaurant: ID
+  }
+
+  input ConfigurationInput {
+    currency: String
+    currencySymbol: String
+    deliveryRate: Float
+    googleApiKey: String
+    testOtp: String
+    skipMobileVerification: Boolean
+    skipEmailVerification: Boolean
+    skipWhatsAppOTP: Boolean
+    firebaseKey: String
+    authDomain: String
+    projectId: String
+    storageBucket: String
+    msgSenderId: String
+    appId: String
+    measurementId: String
+    vapidKey: String
   }
 
   type Query {
@@ -489,10 +578,10 @@ const typeDefs = gql`
     topRatedVendorsPreview(latitude: Float, longitude: Float): [RestaurantPreview]
     
     # Extra
-    cuisines: [Cuisine]
     banners: [Banner]
     coupons: [Coupon]
     coupon(coupon: String!, restaurantId: ID!): CouponResult
+    cuisines: [Cuisine]
     fetchShopTypes(filter: FetchShopTypeFilter, pagination: PaginationInput): ShopTypePaginated
     fetchShopTypeByUnique(dto: FetchUniqueShopTypeInput): ShopType
     withdrawRequests(userType: String, userId: String, pagination: PaginationInput, search: String): WithdrawRequestsResponse
@@ -501,40 +590,6 @@ const typeDefs = gql`
     configuration: Configuration
     reviewsByRestaurant(restaurant: String!): ReviewsResult
     getCountryByIso(iso: String!): Country
-  }
-
-  type RestaurantPaginated {
-    data: [Restaurant]
-    totalCount: Int
-    currentPage: Int
-    totalPages: Int
-  }
-
-  type DashboardUsers {
-    usersCount: Int
-    vendorsCount: Int
-    restaurantsCount: Int
-    ridersCount: Int
-  }
-
-  type DashboardUsersByYear {
-    usersCount: [Int]
-    vendorsCount: [Int]
-    restaurantsCount: [Int]
-    ridersCount: [Int]
-    percentageChange: DashboardPercentageChange
-  }
-
-  type DashboardPercentageChange {
-    usersPercent: Float
-    vendorsPercent: Float
-    restaurantsPercent: Float
-    ridersPercent: Float
-  }
-
-  type DashboardStats {
-    label: String
-    value: Int
   }
 
   type Mutation {
@@ -593,9 +648,47 @@ const typeDefs = gql`
     
     # Coupon
     coupon(coupon: String!, restaurantId: ID!): CouponResult
+    createCoupon(couponInput: CouponInput!): Coupon
+    editCoupon(couponInput: CouponInput!): Coupon
+    deleteCoupon(id: ID!): Boolean
     
     # Chat
     sendChatMessage(orderId: ID!, message: ChatMessageInput!): ChatResult
+    
+    # Activity
+    createActivity: Boolean
+
+    # Admin Operations
+    createRestaurant(restaurant: RestaurantInput!, owner: ID!): Restaurant
+    editRestaurant(restaurant: RestaurantInput!): Restaurant
+    deleteRestaurant(id: ID!): Boolean
+    hardDeleteRestaurant(id: ID!): Boolean
+    updateRestaurantDelivery(id: ID!, minDeliveryFee: Float, deliveryDistance: Float, deliveryFee: Float): Result
+    updateRestaurantBussinessDetails(id: ID!, bussinessDetails: String!): Result
+    updateDeliveryBoundsAndLocation(id: ID!, location: LocationInput, bounds: [[[Float]]], boundType: String): Result
+    
+    # Configurations
+    saveEmailConfiguration(configurationInput: ConfigurationInput!): Configuration
+    saveFormEmailConfiguration(configurationInput: ConfigurationInput!): Configuration
+    saveSendGridConfiguration(configurationInput: ConfigurationInput!): Configuration
+    saveFirebaseConfiguration(configurationInput: ConfigurationInput!): Configuration
+    saveSentryConfiguration(configurationInput: ConfigurationInput!): Configuration
+    saveGoogleApiKeyConfiguration(configurationInput: ConfigurationInput!): Configuration
+    saveCloudinaryConfiguration(configurationInput: ConfigurationInput!): Configuration
+    saveAmplitudeApiKeyConfiguration(configurationInput: ConfigurationInput!): Configuration
+    saveGoogleClientIDConfiguration(configurationInput: ConfigurationInput!): Configuration
+    saveWebConfiguration(configurationInput: ConfigurationInput!): Configuration
+    saveAppConfigurations(configurationInput: ConfigurationInput!): Configuration
+    saveDeliveryRateConfiguration(configurationInput: ConfigurationInput!): Configuration
+    savePaypalConfiguration(configurationInput: ConfigurationInput!): Configuration
+    saveStripeConfiguration(configurationInput: ConfigurationInput!): Configuration
+    saveTwilioConfiguration(configurationInput: ConfigurationInput!): Configuration
+    saveVerificationsToggle(configurationInput: ConfigurationInput!): Configuration
+    saveCurrencyConfiguration(configurationInput: ConfigurationInput!): Configuration
+    
+    # Withdraws
+    saveStatusWithdrawRequest(id: ID!, status: String!, paymentDetails: String): WithdrawRequest
+    createWithdrawRequest(userType: String!, userId: ID!, amount: Float!, restaurantId: ID): WithdrawRequest
   }
 
   type Subscription {
