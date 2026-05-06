@@ -63,6 +63,19 @@ const typeDefs = gql`
     isNewUser: Boolean
   }
 
+  type OwnerAuthData {
+    userId: ID
+    token: String
+    email: String
+    userType: String
+    shopType: String
+    permissions: [String]
+    userTypeId: ID
+    image: String
+    name: String
+    restaurants: [Restaurant]
+  }
+
   type FoodVariation {
     _id: ID
     title: String
