@@ -108,71 +108,8 @@ const typeDefs = gql`
     quantityMaximum: Int
   }
 
-  type OpeningTime {
-    day: String
-    times: [TimeSlot]
-  }
-
-  type TimeSlot {
-    startTime: String
-    endTime: String
-  }
-
-  type ReviewData {
-    reviews: [Review]
-    ratings: Float
-    total: Int
-  }
-
   type Restaurant {
-    _id: ID!
-    unique_restaurant_id: String
-    orderId: Int
-    orderPrefix: String
-    name: String!
-    image: String
-    logo: String
-    address: String
-    location: Location
-    categories: [Category]
-    options: [Option]
-    addons: [Addon]
-    username: String
-    password: String
-    deliveryTime: Int
-    minimumOrder: Float
-    sections: [String]
-    rating: Float
-    isActive: Boolean
-    isAvailable: Boolean
-    openingTimes: [OpeningTime]
-    slug: String
-    commissionRate: Float
-    tax: Float
-    notificationToken: String
-    enableNotification: Boolean
-    shopType: String
-    cuisines: [String]
-    keywords: [String]
-    tags: [String]
-    phone: String
-    restaurantUrl: String
-    stripeDetailsSubmitted: Boolean
-    owner: User
-    zone: Zone
-    reviewData: ReviewData
-    reviewCount: Int
-    reviewAverage: Float
-    distanceWithCurrentLocation: Float
-    freeDelivery: Boolean
-    acceptVouchers: Boolean
-    deliveryBounds: Location
-    createdAt: String
-    updatedAt: String
-  }
-
-  type RestaurantPreview {
-    _id: ID!
+    _id: ID
     orderId: Int
     orderPrefix: String
     name: String
@@ -180,29 +117,41 @@ const typeDefs = gql`
     logo: String
     address: String
     location: Location
+    deliveryBounds: Location
+    categories: [Category]
+    options: [Option]
+    addons: [Addon]
     username: String
-    password: String
     deliveryTime: Int
     minimumOrder: Float
-    sections: [String]
+    tax: Float
     rating: Float
     isActive: Boolean
     isAvailable: Boolean
-    openingTimes: [OpeningTime]
-    slug: String
-    commissionRate: Float
-    tax: Float
     notificationToken: String
-    enableNotification: Boolean
     shopType: String
     cuisines: [String]
     keywords: [String]
     tags: [String]
+    phone: String
+    owner: User
+    zone: Zone
     reviewCount: Int
     reviewAverage: Float
-    distanceWithCurrentLocation: Float
-    freeDelivery: Boolean
-    acceptVouchers: Boolean
+    createdAt: String
+    updatedAt: String
+  }
+
+  type RestaurantPreview {
+    _id: ID
+    name: String
+    image: String
+    logo: String
+    address: String
+    location: Location
+    rating: Float
+    reviewCount: Int
+    reviewAverage: Float
   }
 
   type NearbyRestaurants {
@@ -217,17 +166,13 @@ const typeDefs = gql`
     restaurants: [RestaurantPreview]
   }
 
-  type Offer {
+  type Zone {
     _id: ID
-    name: String
-    tag: String
-    restaurants: [String]
-  }
-
-  type Section {
-    _id: ID
-    name: String
-    restaurants: [String]
+    title: String
+    description: String
+    tax: Float
+    location: Location
+    isActive: Boolean
   }
 
   type Cuisine {
@@ -236,6 +181,21 @@ const typeDefs = gql`
     description: String
     image: String
     shopType: String
+    isActive: Boolean
+  }
+
+  type Coupon {
+    _id: ID
+    title: String
+    discount: Int
+    enabled: Boolean
+    restaurant: ID
+  }
+
+  type CouponResult {
+    success: Boolean
+    message: String
+    coupon: Coupon
   }
 
   type Banner {
@@ -248,55 +208,89 @@ const typeDefs = gql`
     parameters: String
   }
 
-  type Zone {
+  type Section {
     _id: ID
-    title: String
-    description: String
-    tax: Float
-    location: Location
+    name: String
+    restaurants: [String]
+  }
+
+  type Offer {
+    _id: ID
+    name: String
+    tag: String
+    restaurants: [String]
+  }
+
+  type Rider {
+    _id: ID
+    name: String
+    username: String
+    phone: String
+    available: Boolean
     isActive: Boolean
+    location: Location
+    zone: Zone
   }
 
   type OrderItem {
     _id: ID
-    id: ID
     title: String
     food: ID
-    description: String
-    image: String
     quantity: Int
-    variation: OrderVariation
-    addons: [OrderAddon]
+    variation: FoodVariation
+    addons: [OrderItemAddon]
     specialInstructions: String
-    isActive: Boolean
+  }
+
+  type OrderItemAddon {
+    _id: ID
+    title: String
+    options: [OrderItemOption]
+  }
+
+  type OrderItemOption {
+    _id: ID
+    title: String
+    price: Float
+  }
+
+  type Order {
+    _id: ID
+    orderId: String
+    restaurant: Restaurant
+    user: User
+    rider: Rider
+    items: [OrderItem]
+    deliveryAddress: Address
+    paymentMethod: String
+    paidAmount: Float
+    orderAmount: Float
+    orderStatus: String
+    paymentStatus: String
+    tipping: Float
+    taxationAmount: Float
+    deliveryCharges: Float
+    discountAmount: Float
+    instructions: String
+    orderDate: String
+    expectedTime: String
+    acceptedAt: String
+    pickedAt: String
+    deliveredAt: String
+    cancelledAt: String
+    assignedAt: String
+    review: Review
+    zone: Zone
     createdAt: String
-    updatedAt: String
   }
 
-  type OrderVariation {
-    _id: ID
-    id: ID
-    title: String
-    price: Float
-    discounted: Float
-  }
-
-  type OrderAddon {
-    _id: ID
-    id: ID
-    title: String
-    description: String
-    quantityMinimum: Int
-    quantityMaximum: Int
-    options: [OrderOption]
-  }
-
-  type OrderOption {
-    _id: ID
-    id: ID
-    title: String
-    description: String
-    price: Float
+  type OrderPaginated {
+    totalCount: Int
+    orders: [Order]
+    currentPage: Int
+    totalPages: Int
+    prevPage: Int
+    nextPage: Int
   }
 
   type Review {
@@ -305,9 +299,7 @@ const typeDefs = gql`
     restaurant: Restaurant
     rating: Int
     description: String
-    isActive: Boolean
     createdAt: String
-    updatedAt: String
   }
 
   type ReviewsResult {
@@ -316,149 +308,56 @@ const typeDefs = gql`
     total: Int
   }
 
-  type Rider {
-    _id: ID
-    name: String
-    email: String
-    username: String
-    password: String
-    phone: String
-    image: String
-    available: Boolean
-    isActive: Boolean
-    location: Location
-    currentWalletAmount: Float
-    totalWalletAmount: Float
-    withdrawnWalletAmount: Float
-    accountNumber: String
-    vehicleType: String
-    assigned: [String]
-    zone: Zone
-    createdAt: String
-    updatedAt: String
-  }
-
-  type Order {
-    _id: ID!
-    orderId: String
-    id: ID
-    restaurant: Restaurant
-    user: User
-    rider: Rider
-    items: [OrderItem]
-    deliveryAddress: Address
-    paymentMethod: String
-    paidAmount: Float
-    orderAmount: Float!
-    orderStatus: String
-    paymentStatus: String
-    status: String
-    tipping: Float
-    taxationAmount: Float
-    deliveryCharges: Float
-    discountAmount: Float
-    instructions: String
-    reason: String
-    isActive: Boolean
-    isPickedUp: Boolean
-    completionTime: Int
-    preparationTime: Int
-    orderDate: String
-    expectedTime: String
-    acceptedAt: String
-    pickedAt: String
-    deliveredAt: String
-    cancelledAt: String
-    assignedAt: String
-    isRinged: Boolean
-    isRiderRinged: Boolean
-    review: Review
-    createdAt: String
-    updatedAt: String
-    zone: Zone
-  }
-
-  type OrderPaginated {
-    totalCount: Int
-    currentPage: Int
-    totalPages: Int
-    prevPage: Int
-    nextPage: Int
-    orders: [Order]
-  }
-
   type Configuration {
     _id: ID
-    email: String
-    emailName: String
-    password: String
-    enableEmail: Boolean
-    clientId: String
-    clientSecret: String
-    sandbox: Boolean
-    publishableKey: String
-    secretKey: String
     currency: String
     currencySymbol: String
     deliveryRate: Float
-    twilioAccountSid: String
-    twilioAuthToken: String
-    twilioPhoneNumber: String
-    twilioEnabled: Boolean
-    skipWhatsAppOTP: Boolean
-    twilioWhatsAppNumber: String
-    formEmail: String
-    sendGridApiKey: String
-    sendGridEnabled: Boolean
-    sendGridEmail: String
-    sendGridEmailName: String
-    sendGridPassword: String
-    dashboardSentryUrl: String
-    webSentryUrl: String
-    apiSentryUrl: String
-    customerAppSentryUrl: String
-    restaurantAppSentryUrl: String
-    riderAppSentryUrl: String
     googleApiKey: String
-    cloudinaryUploadUrl: String
-    cloudinaryApiKey: String
-    webAmplitudeApiKey: String
-    appAmplitudeApiKey: String
-    webClientID: String
-    androidClientID: String
-    iOSClientID: String
-    expoClientID: String
-    googleMapLibraries: String
-    googleColor: String
     termsAndConditions: String
     privacyPolicy: String
     testOtp: String
-    firebaseKey: String
-    authDomain: String
-    projectId: String
-    storageBucket: String
-    msgSenderId: String
-    appId: String
-    measurementId: String
     isPaidVersion: Boolean
-    skipEmailVerification: Boolean
-    skipMobileVerification: Boolean
-    costType: String
-    vapidKey: String
-    googlePlacesApiBaseUrl: String
   }
 
-  type Coupon {
+  type ShopType {
     _id: ID
-    title: String
-    discount: Float
-    enabled: Boolean
+    name: String
+    image: String
+    isActive: Boolean
   }
 
-  type CouponResult {
-    coupon: Coupon
-    message: String
+  type ShopTypePaginated {
+    data: [ShopType]
+    total: Int
+    page: Int
+    pageSize: Int
+    totalPages: Int
+    hasNextPage: Boolean
+    hasPrevPage: Boolean
+  }
+
+  type WithdrawRequest {
+    _id: ID
+    requestId: String
+    userType: String
+    user: ID
+    userModel: String
+    restaurant: ID
+    requestAmount: Float
+    status: String
+    createdAt: String
+  }
+
+  type WithdrawRequestsResponse {
+    data: [WithdrawRequest]
     success: Boolean
+    message: String
+    pagination: Pagination
+  }
+
+  type Pagination {
+    total: Int
   }
 
   type Result {
@@ -466,10 +365,21 @@ const typeDefs = gql`
   }
 
   type ExistUser {
-    userType: String
     _id: ID
     email: String
     phone: String
+    userType: String
+  }
+
+  type Country {
+    cities: [City]
+  }
+
+  type City {
+    id: ID
+    name: String
+    latitude: Float
+    longitude: Float
   }
 
   type ChatMessage {
@@ -490,104 +400,18 @@ const typeDefs = gql`
     data: ChatMessage
   }
 
-  type City {
-    id: ID
-    name: String
-    latitude: Float
-    longitude: Float
-  }
-
-  type Country {
-    cities: [City]
-  }
-
-  type OrderStatusPayload {
-    userId: String
-    origin: String
-    order: Order
-  }
-
   input OrderInput {
-    food: String
-    quantity: Int
-    variation: ID
-    addons: [String]
+    food: ID!
+    quantity: Int!
+    variation: ID!
+    addons: [ID]
     specialInstructions: String
   }
 
-  input ChatMessageInput {
-    message: String
-    user: ChatUserInput
-  }
-
-  input ChatUserInput {
-    id: ID
-    name: String
-  }
-
-  type DashboardUsers {
-    usersCount: Int
-    vendorsCount: Int
-    restaurantsCount: Int
-    ridersCount: Int
-  }
-
-  type DashboardPercentageChange {
-    usersPercent: Float
-    vendorsPercent: Float
-    restaurantsPercent: Float
-    ridersPercent: Float
-  }
-
-  type DashboardUsersByYear {
-    usersCount: [Int]
-    vendorsCount: [Int]
-    restaurantsCount: [Int]
-    ridersCount: [Int]
-    percentageChange: DashboardPercentageChange
-  }
-
-  type DashboardChartData {
-    value: Float
-    label: String
-  }
-
-  type Vendor {
-    unique_id: String
-    _id: ID
-    email: String
-    userType: String
-    isActive: Boolean
-    name: String
-    image: String
-    restaurants: [Restaurant]
-    firstName: String
-    lastName: String
-    phoneNumber: String
-  }
-
-  type RestaurantPaginated {
-    data: [Restaurant]
-    totalCount: Int
-    currentPage: Int
-    totalPages: Int
-  }
-
-  type ShopType {
-    _id: ID
-    name: String
-    image: String
-    isActive: Boolean
-  }
-
-  type ShopTypePaginated {
-    data: [ShopType]
-    total: Int
-    page: Int
-    pageSize: Int
-    totalPages: Int
-    hasNextPage: Boolean
-    hasPrevPage: Boolean
+  input ReviewInput {
+    order: ID!
+    rating: Int!
+    description: String
   }
 
   input PaginationInput {
@@ -600,96 +424,104 @@ const typeDefs = gql`
   }
 
   input FetchUniqueShopTypeInput {
-    _id: ID
+    _id: ID!
   }
 
-  type PaginationResponse {
-    total: Int
+  input ChatMessageInput {
+    message: String!
+    user: ChatUserInput!
   }
 
-  type WithdrawRequest {
-    _id: ID
-    requestId: String
-    requestAmount: Float
-    requestTime: String
-    status: String
-    createdAt: String
-    rider: Rider
-    store: Restaurant
-  }
-
-  type WithdrawRequestsResponse {
-    message: String
-    pagination: PaginationResponse
-    data: [WithdrawRequest]
-    success: Boolean
-  }
-
-  enum UserTypeEnum {
-    VENDOR
-    RIDER
+  input ChatUserInput {
+    id: ID!
+    name: String!
   }
 
   type Query {
-    # Dashboard Queries
-    getDashboardUsers: DashboardUsers
-    getDashboardUsersByYear(year: Int!): DashboardUsersByYear
-    getDashboardOrdersByType: [DashboardChartData]
-    getDashboardSalesByType: [DashboardChartData]
-
+    # Profile
     profile: User
     users: [User]
     user(id: ID!): User
     
-    vendors: [Vendor]
-    getVendor(id: String!): Vendor
+    # Dashboard
+    vendors: [User]
+    getVendor(id: ID!): User
+    getDashboardUsers: DashboardUsers
+    getDashboardUsersByYear(year: Int): DashboardUsersByYear
+    getDashboardOrdersByType: [DashboardStats]
+    getDashboardSalesByType: [DashboardStats]
     
-    restaurants: [Restaurant]
-    restaurantsPaginated(page: Int, limit: Int, search: String): RestaurantPaginated
-    
+    # Riders
     riders: [Rider]
     availableRiders: [Rider]
     ridersByZone(id: String!): [Rider]
 
+    # Orders
     order(id: String!): Order
     orders(offset: Int): [Order]
     allOrders(page: Int): [Order]
-    allOrdersPaginated(page: Int, rows: Int, dateKeyword: String, starting_date: String, ending_date: String, orderStatus: [String], search: String): OrderPaginated
-    allOrdersWithoutPagination(dateKeyword: String, starting_date: String, ending_date: String): [Order]
-    getActiveOrders(restaurantId: ID, page: Int, rowsPerPage: Int, actions: [String], search: String): OrderPaginated
+    allOrdersPaginated(page: Int, rows: Int, search: String): OrderPaginated
+    allOrdersWithoutPagination: [Order]
+    getActiveOrders(restaurantId: ID, page: Int, rowsPerPage: Int, search: String): OrderPaginated
     ordersByRestId(restaurant: String!, page: Int, rows: Int, search: String): [Order]
     ordersByRestIdWithoutPagination(restaurant: String!, search: String): [Order]
 
+    # Restaurants
     restaurant(id: String): Restaurant
+    restaurants: [Restaurant]
+    restaurantsPaginated(page: Int, limit: Int, search: String): RestaurantPaginated
     nearByRestaurants(latitude: Float, longitude: Float, shopType: String): NearbyRestaurants
     nearByRestaurantsPreview(latitude: Float, longitude: Float, shopType: String): NearbyRestaurantsPreview
-    topRatedVendors(latitude: Float!, longitude: Float!): [Restaurant]
-    topRatedVendorsPreview(latitude: Float!, longitude: Float!): [RestaurantPreview]
+    topRatedVendors(latitude: Float, longitude: Float): [Restaurant]
+    topRatedVendorsPreview(latitude: Float, longitude: Float): [RestaurantPreview]
+    
+    # Extra
     cuisines: [Cuisine]
     banners: [Banner]
     coupons: [Coupon]
+    coupon(coupon: String!, restaurantId: ID!): CouponResult
     fetchShopTypes(filter: FetchShopTypeFilter, pagination: PaginationInput): ShopTypePaginated
     fetchShopTypeByUnique(dto: FetchUniqueShopTypeInput): ShopType
-    withdrawRequests(userType: UserTypeEnum, userId: String, pagination: PaginationInput, search: String): WithdrawRequestsResponse
-
+    withdrawRequests(userType: String, userId: String, pagination: PaginationInput, search: String): WithdrawRequestsResponse
+    
     rider(id: String): Rider
     configuration: Configuration
     reviewsByRestaurant(restaurant: String!): ReviewsResult
     getCountryByIso(iso: String!): Country
-    coupon(coupon: String!, restaurantId: ID!): CouponResult
   }
 
-  type OwnerAuthData {
-    userId: ID
-    token: String
-    email: String
-    userType: String
-    shopType: String
-    permissions: [String]
-    userTypeId: ID
-    image: String
-    name: String
-    restaurants: [Restaurant]
+  type RestaurantPaginated {
+    data: [Restaurant]
+    totalCount: Int
+    currentPage: Int
+    totalPages: Int
+  }
+
+  type DashboardUsers {
+    usersCount: Int
+    vendorsCount: Int
+    restaurantsCount: Int
+    ridersCount: Int
+  }
+
+  type DashboardUsersByYear {
+    usersCount: [Int]
+    vendorsCount: [Int]
+    restaurantsCount: [Int]
+    ridersCount: [Int]
+    percentageChange: DashboardPercentageChange
+  }
+
+  type DashboardPercentageChange {
+    usersPercent: Float
+    vendorsPercent: Float
+    restaurantsPercent: Float
+    ridersPercent: Float
+  }
+
+  type DashboardStats {
+    label: String
+    value: Int
   }
 
   type Mutation {
@@ -733,6 +565,8 @@ const typeDefs = gql`
     
     abortOrder(id: String!): Order
     reviewOrder(reviewInput: ReviewInput!): Order
+    updateStatus(id: ID!, orderStatus: String!): Order
+    assignRider(id: ID!, riderId: ID!): Order
     
     # User
     addFavourite(id: String!): User
@@ -742,229 +576,19 @@ const typeDefs = gql`
     # Check existence
     emailExist(email: String!): ExistUser
     phoneExist(phone: String!): ExistUser
-    # Deactivate
     Deactivate(isActive: Boolean!, email: String!): User
+    
+    # Coupon
+    coupon(coupon: String!, restaurantId: ID!): CouponResult
     
     # Chat
     sendChatMessage(orderId: ID!, message: ChatMessageInput!): ChatResult
-    
-    # Activity
-    createActivity(groupId: String!, module: String!, screenPath: String!, type: String!, details: String!): Boolean
-
-    # === ADMIN RESTAURANT MUTATIONS ===
-    createRestaurant(restaurant: RestaurantInput!, owner: ID!): Restaurant
-    editRestaurant(restaurant: RestaurantProfileInput!): Restaurant
-    deleteRestaurant(id: String!): Restaurant
-    hardDeleteRestaurant(id: String!): Boolean
-    updateRestaurantDelivery(id: ID!, minDeliveryFee: Float, deliveryDistance: Float, deliveryFee: Float): ResultWithData
-    updateRestaurantBussinessDetails(id: String!, bussinessDetails: BussinessDetailsInput): ResultWithData
-    updateDeliveryBoundsAndLocation(id: ID!, boundType: String!, bounds: [[[Float!]]], circleBounds: CircleBoundsInput, location: LocationInput!, address: String, postCode: String, city: String): ResultWithData
-
-    # === ADMIN COUPON MUTATIONS ===
-    createCoupon(couponInput: CouponInput!): Coupon
-    editCoupon(couponInput: CouponInput!): Coupon
-    deleteCoupon(id: String!): Boolean
-
-    # === ADMIN ORDER/DISPATCH MUTATIONS ===
-    updateStatus(id: String!, orderStatus: String!): Order
-    assignRider(id: String!, riderId: String!): Order
-
-    # === ADMIN CONFIGURATION MUTATIONS ===
-    saveEmailConfiguration(configurationInput: EmailConfigurationInput!): Configuration
-    saveFormEmailConfiguration(configurationInput: FormEmailConfigurationInput!): Configuration
-    saveSendGridConfiguration(configurationInput: SendGridConfigurationInput!): Configuration
-    saveFirebaseConfiguration(configurationInput: FirebaseConfigurationInput!): Configuration
-    saveSentryConfiguration(configurationInput: SentryConfigurationInput!): Configuration
-    saveGoogleApiKeyConfiguration(configurationInput: GoogleApiKeyConfigurationInput!): Configuration
-    saveCloudinaryConfiguration(configurationInput: CloudinaryConfigurationInput!): Configuration
-    saveAmplitudeApiKeyConfiguration(configurationInput: AmplitudeApiKeyConfigurationInput!): Configuration
-    saveGoogleClientIDConfiguration(configurationInput: GoogleClientIDConfigurationInput!): Configuration
-    saveWebConfiguration(configurationInput: WebConfigurationInput!): Configuration
-    saveAppConfigurations(configurationInput: AppConfigurationsInput!): Configuration
-    saveDeliveryRateConfiguration(configurationInput: DeliveryCostConfigurationInput!): Configuration
-    savePaypalConfiguration(configurationInput: PaypalConfigurationInput!): Configuration
-    saveStripeConfiguration(configurationInput: StripeConfigurationInput!): Configuration
-    saveTwilioConfiguration(configurationInput: TwilioConfigurationInput!): Configuration
-    saveVerificationsToggle(configurationInput: VerificationConfigurationInput!): Configuration
-    saveCurrencyConfiguration(configurationInput: CurrencyConfigurationInput!): Configuration
-    saveStatusWithdrawRequest(id: ID!, status: String!, paymentDetails: String): WithdrawRequest
-    createWithdrawRequest(userType: String!, userId: ID!, amount: Float!, restaurantId: ID): WithdrawRequest
-  }
-
-  type ResultWithData {
-    success: Boolean
-    message: String
-    data: Restaurant
-  }
-
-  input RestaurantInput {
-    name: String!
-    image: String
-    username: String!
-    password: String!
-    orderPrefix: String
-    phone: String
-    address: String
-    deliveryTime: Int
-    minimumOrder: Float
-    shopType: String
-    location: LocationInput
-    cuisines: [String]
-  }
-
-  input RestaurantProfileInput {
-    _id: ID!
-    name: String
-    phone: String
-    image: String
-    logo: String
-    slug: String
-    address: String
-    username: String
-    password: String
-    location: LocationInput
-    isAvailable: Boolean
-    minimumOrder: Float
-    tax: Float
-    openingTimes: [OpeningTimeInput]
-    shopType: String
-  }
-
-  input OpeningTimeInput {
-    day: String
-    times: [TimeSlotInput]
-  }
-
-  input TimeSlotInput {
-    startTime: String
-    endTime: String
-  }
-
-  input BussinessDetailsInput {
-    bankName: String
-    accountName: String
-    accountCode: String
-    accountNumber: String
-    bussinessRegNo: String
-    companyRegNo: String
-    taxRate: Float
-  }
-
-  input CircleBoundsInput {
-    radius: Float
-  }
-
-  input CouponInput {
-    _id: ID
-    title: String
-    discount: Float
-    enabled: Boolean
-    startDate: String
-    endDate: String
-    lifeTimeActive: Boolean
-  }
-
-  # Configuration Inputs
-  input EmailConfigurationInput {
-    email: String
-    emailName: String
-    password: String
-    enableEmail: Boolean
-  }
-  input FormEmailConfigurationInput {
-    formEmail: String
-  }
-  input SendGridConfigurationInput {
-    sendGridApiKey: String
-    sendGridEnabled: Boolean
-    sendGridEmail: String
-    sendGridEmailName: String
-    sendGridPassword: String
-  }
-  input FirebaseConfigurationInput {
-    firebaseKey: String
-    authDomain: String
-    projectId: String
-    storageBucket: String
-    msgSenderId: String
-    appId: String
-    measurementId: String
-    vapidKey: String
-  }
-  input SentryConfigurationInput {
-    dashboardSentryUrl: String
-    webSentryUrl: String
-    apiSentryUrl: String
-    customerAppSentryUrl: String
-    restaurantAppSentryUrl: String
-    riderAppSentryUrl: String
-  }
-  input GoogleApiKeyConfigurationInput {
-    googleApiKey: String
-  }
-  input CloudinaryConfigurationInput {
-    cloudinaryUploadUrl: String
-    cloudinaryApiKey: String
-  }
-  input AmplitudeApiKeyConfigurationInput {
-    webAmplitudeApiKey: String
-    appAmplitudeApiKey: String
-  }
-  input GoogleClientIDConfigurationInput {
-    webClientID: String
-    androidClientID: String
-    iOSClientID: String
-    expoClientID: String
-  }
-  input WebConfigurationInput {
-    googleMapLibraries: String
-    googleColor: String
-  }
-  input AppConfigurationsInput {
-    termsAndConditions: String
-    privacyPolicy: String
-    testOtp: String
-  }
-  input DeliveryCostConfigurationInput {
-    deliveryRate: Float
-    costType: String
-  }
-  input PaypalConfigurationInput {
-    clientId: String
-    clientSecret: String
-    sandbox: Boolean
-  }
-  input StripeConfigurationInput {
-    publishableKey: String
-    secretKey: String
-  }
-  input TwilioConfigurationInput {
-    twilioAccountSid: String
-    twilioAuthToken: String
-    twilioPhoneNumber: String
-    twilioEnabled: Boolean
-    twilioWhatsAppNumber: String
-  }
-  input VerificationConfigurationInput {
-    skipEmailVerification: Boolean
-    skipMobileVerification: Boolean
-    skipWhatsAppOTP: Boolean
-  }
-  input CurrencyConfigurationInput {
-    currency: String
-    currencySymbol: String
-  }
-
-  input ReviewInput {
-    order: String!
-    rating: Int!
-    description: String
   }
 
   type Subscription {
-    subscriptionOrder(id: String!): Order
-    subscriptionRiderLocation(riderId: String!): Rider
-    orderStatusChanged(userId: String!): OrderStatusPayload
+    subscriptionOrder(id: ID!): Order
+    subscriptionRiderLocation(riderId: ID!): Rider
+    orderStatusChanged(userId: ID!): Order
     subscriptionNewMessage(order: ID!): ChatMessage
   }
 `
