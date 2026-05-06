@@ -3,6 +3,10 @@ const { gql } = require('graphql-tag')
 const typeDefs = gql`
   scalar Date
 
+  # ============================================================
+  #  BASIC TYPES
+  # ============================================================
+
   type Location {
     coordinates: [Float]
   }
@@ -17,24 +21,15 @@ const typeDefs = gql`
     selected: Boolean
   }
 
-  input AddressInput {
-    _id: ID
-    label: String
-    deliveryAddress: String
-    details: String
-    location: LocationInput
-    selected: Boolean
-  }
-
-  input LocationInput {
-    coordinates: [Float]
-  }
-
   type User {
     _id: ID!
+    unique_id: String
     name: String
+    firstName: String
+    lastName: String
     email: String
     phone: String
+    phoneNumber: String
     phoneIsVerified: Boolean
     emailIsVerified: Boolean
     notificationToken: String
@@ -48,6 +43,8 @@ const typeDefs = gql`
     status: String
     lastLogin: String
     notes: String
+    image: String
+    restaurants: [Restaurant]
     createdAt: String
     updatedAt: String
   }
@@ -75,6 +72,10 @@ const typeDefs = gql`
     name: String
     restaurants: [Restaurant]
   }
+
+  # ============================================================
+  #  FOOD / MENU TYPES
+  # ============================================================
 
   type FoodVariation {
     _id: ID
@@ -121,6 +122,10 @@ const typeDefs = gql`
     quantityMaximum: Int
   }
 
+  # ============================================================
+  #  RESTAURANT TYPES
+  # ============================================================
+
   type Restaurant {
     _id: ID
     orderId: Int
@@ -151,8 +156,16 @@ const typeDefs = gql`
     zone: Zone
     reviewCount: Int
     reviewAverage: Float
+    bussinessDetails: String
+    deliveryInfo: DeliveryInfo
     createdAt: String
     updatedAt: String
+  }
+
+  type DeliveryInfo {
+    minDeliveryFee: Float
+    deliveryDistance: Float
+    deliveryFee: Float
   }
 
   type RestaurantPreview {
@@ -167,6 +180,13 @@ const typeDefs = gql`
     reviewAverage: Float
   }
 
+  type RestaurantPaginated {
+    data: [Restaurant]
+    totalCount: Int
+    currentPage: Int
+    totalPages: Int
+  }
+
   type NearbyRestaurants {
     offers: [Offer]
     sections: [Section]
@@ -178,6 +198,10 @@ const typeDefs = gql`
     sections: [Section]
     restaurants: [RestaurantPreview]
   }
+
+  # ============================================================
+  #  ZONE / CUISINE / BANNER / SECTION / OFFER
+  # ============================================================
 
   type Zone {
     _id: ID
@@ -234,6 +258,10 @@ const typeDefs = gql`
     restaurants: [String]
   }
 
+  # ============================================================
+  #  RIDER
+  # ============================================================
+
   type Rider {
     _id: ID
     name: String
@@ -245,6 +273,10 @@ const typeDefs = gql`
     zone: Zone
     notificationToken: String
   }
+
+  # ============================================================
+  #  ORDER TYPES
+  # ============================================================
 
   type OrderItem {
     _id: ID
@@ -293,8 +325,10 @@ const typeDefs = gql`
     deliveredAt: String
     cancelledAt: String
     assignedAt: String
+    isPickedUp: Boolean
     review: Review
     zone: Zone
+    isActive: Boolean
     createdAt: String
   }
 
@@ -306,6 +340,10 @@ const typeDefs = gql`
     prevPage: Int
     nextPage: Int
   }
+
+  # ============================================================
+  #  REVIEW
+  # ============================================================
 
   type Review {
     _id: ID
@@ -321,6 +359,10 @@ const typeDefs = gql`
     ratings: Float
     total: Int
   }
+
+  # ============================================================
+  #  CONFIGURATION
+  # ============================================================
 
   type Configuration {
     _id: ID
@@ -352,6 +394,10 @@ const typeDefs = gql`
     vapidKey: String
   }
 
+  # ============================================================
+  #  SHOP TYPE
+  # ============================================================
+
   type ShopType {
     _id: ID
     name: String
@@ -368,6 +414,10 @@ const typeDefs = gql`
     hasNextPage: Boolean
     hasPrevPage: Boolean
   }
+
+  # ============================================================
+  #  WITHDRAW REQUEST
+  # ============================================================
 
   type WithdrawRequest {
     _id: ID
@@ -393,8 +443,15 @@ const typeDefs = gql`
     total: Int
   }
 
+  # ============================================================
+  #  MISC TYPES
+  # ============================================================
+
   type Result {
     result: Boolean
+    success: Boolean
+    message: String
+    data: Restaurant
   }
 
   type ExistUser {
@@ -415,6 +472,10 @@ const typeDefs = gql`
     longitude: Float
   }
 
+  # ============================================================
+  #  CHAT TYPES
+  # ============================================================
+
   type ChatMessage {
     id: ID
     message: String
@@ -432,6 +493,10 @@ const typeDefs = gql`
     message: String
     data: ChatMessage
   }
+
+  # ============================================================
+  #  DASHBOARD TYPES
+  # ============================================================
 
   type DashboardUsers {
     usersCount: Int
@@ -458,6 +523,23 @@ const typeDefs = gql`
   type DashboardStats {
     label: String
     value: Int
+  }
+
+  # ============================================================
+  #  INPUTS
+  # ============================================================
+
+  input AddressInput {
+    _id: ID
+    label: String
+    deliveryAddress: String
+    details: String
+    location: LocationInput
+    selected: Boolean
+  }
+
+  input LocationInput {
+    coordinates: [Float]
   }
 
   input OrderInput {
@@ -539,45 +621,33 @@ const typeDefs = gql`
     vapidKey: String
   }
 
+  # ============================================================
+  #  QUERY - 33 resolvers (matched 1:1 from resolvers.js)
+  # ============================================================
+
   type Query {
-    # Profile
+    # Profile (line 34-40)
     profile: User
     users: [User]
     user(id: ID!): User
-    
-    # Dashboard
+
+    # Vendors (line 43-74)
     vendors: [User]
     getVendor(id: ID!): User
+
+    # Riders (line 78-81)
+    riders: [Rider]
+    availableRiders: [Rider]
+    ridersByZone(id: String!): [Rider]
+    rider(id: String): Rider
+
+    # Dashboard (line 84-111)
     getDashboardUsers: DashboardUsers
     getDashboardUsersByYear(year: Int): DashboardUsersByYear
     getDashboardOrdersByType: [DashboardStats]
     getDashboardSalesByType: [DashboardStats]
-    
-    # Riders
-    riders: [Rider]
-    availableRiders: [Rider]
-    ridersByZone(id: String!): [Rider]
 
-    # Orders
-    order(id: String!): Order
-    orders(offset: Int): [Order]
-    allOrders(page: Int): [Order]
-    allOrdersPaginated(page: Int, rows: Int, search: String): OrderPaginated
-    allOrdersWithoutPagination: [Order]
-    getActiveOrders(restaurantId: ID, page: Int, rowsPerPage: Int, search: String): OrderPaginated
-    ordersByRestId(restaurant: String!, page: Int, rows: Int, search: String): [Order]
-    ordersByRestIdWithoutPagination(restaurant: String!, search: String): [Order]
-
-    # Restaurants
-    restaurant(id: String): Restaurant
-    restaurants: [Restaurant]
-    restaurantsPaginated(page: Int, limit: Int, search: String): RestaurantPaginated
-    nearByRestaurants(latitude: Float, longitude: Float, shopType: String): NearbyRestaurants
-    nearByRestaurantsPreview(latitude: Float, longitude: Float, shopType: String): NearbyRestaurantsPreview
-    topRatedVendors(latitude: Float, longitude: Float): [Restaurant]
-    topRatedVendorsPreview(latitude: Float, longitude: Float): [RestaurantPreview]
-    
-    # Extra
+    # Extras (line 114-188)
     banners: [Banner]
     coupons: [Coupon]
     coupon(coupon: String!, restaurantId: ID!): CouponResult
@@ -585,38 +655,63 @@ const typeDefs = gql`
     fetchShopTypes(filter: FetchShopTypeFilter, pagination: PaginationInput): ShopTypePaginated
     fetchShopTypeByUnique(dto: FetchUniqueShopTypeInput): ShopType
     withdrawRequests(userType: String, userId: String, pagination: PaginationInput, search: String): WithdrawRequestsResponse
-    
-    rider(id: String): Rider
+
+    # Orders (line 191-263)
+    allOrders(page: Int): [Order]
+    allOrdersPaginated(page: Int, rows: Int, search: String): OrderPaginated
+    allOrdersWithoutPagination: [Order]
+    getActiveOrders(restaurantId: ID, page: Int, rowsPerPage: Int, search: String): OrderPaginated
+    ordersByRestId(restaurant: String!, page: Int, rows: Int, search: String): [Order]
+    ordersByRestIdWithoutPagination(restaurant: String!, search: String): [Order]
+    order(id: String!): Order
+    orders(offset: Int): [Order]
+
+    # Restaurants (line 266-353)
+    restaurant(id: String): Restaurant
+    restaurants: [Restaurant]
+    restaurantsPaginated(page: Int, limit: Int, search: String): RestaurantPaginated
+    nearByRestaurants(latitude: Float, longitude: Float, shopType: String): NearbyRestaurants
+    nearByRestaurantsPreview(latitude: Float, longitude: Float, shopType: String): NearbyRestaurantsPreview
+    topRatedVendors(latitude: Float, longitude: Float): [Restaurant]
+    topRatedVendorsPreview(latitude: Float, longitude: Float): [RestaurantPreview]
+
+    # Config & Reviews (line 356-388)
     configuration: Configuration
     reviewsByRestaurant(restaurant: String!): ReviewsResult
     getCountryByIso(iso: String!): Country
   }
 
+  # ============================================================
+  #  MUTATION - 42+ resolvers (matched 1:1 from resolvers.js)
+  # ============================================================
+
   type Mutation {
-    # Auth
+    # Auth (line 393-434)
     ownerLogin(email: String!, password: String!): OwnerAuthData
+
+    # Auth (line 438-510)
     login(email: String, password: String, type: String!, appleId: String, name: String, notificationToken: String): AuthData
     createUser(phone: String, email: String, password: String, name: String, notificationToken: String, appleId: String, emailIsVerified: Boolean, isPhoneExists: Boolean): AuthData
     updateUser(name: String!, phone: String, phoneIsVerified: Boolean, emailIsVerified: Boolean): User
-    
-    # OTP
+
+    # OTP (line 513-541)
     sendOtpToEmail(email: String!): Result
     sendOtpToPhoneNumber(phone: String!): Result
     verifyOtp(otp: String!, email: String, phone: String): Result
-    
-    # Password
+
+    # Password (line 544-567)
     forgotPassword(email: String!): Result
     resetPassword(password: String!, email: String!): Result
     changePassword(oldPassword: String!, newPassword: String!): Boolean
-    
-    # Address
+
+    # Address (line 570-604)
     createAddress(addressInput: AddressInput!): User
     editAddress(addressInput: AddressInput!): User
     deleteAddress(id: ID!): User
     deleteBulkAddresses(ids: [ID!]!): User
     selectAddress(id: String!): User
-    
-    # Orders
+
+    # Orders (line 607-729)
     placeOrder(
       restaurant: String!
       orderInput: [OrderInput!]!
@@ -630,35 +725,27 @@ const typeDefs = gql`
       deliveryCharges: Float!
       instructions: String
     ): Order
-    
     abortOrder(id: String!): Order
     reviewOrder(reviewInput: ReviewInput!): Order
-    updateStatus(id: ID!, orderStatus: String!): Order
-    assignRider(id: ID!, riderId: ID!): Order
-    
-    # User
+
+    # User (line 733-773)
     addFavourite(id: String!): User
     updateNotificationStatus(offerNotification: Boolean!, orderNotification: Boolean!): User
     pushToken(token: String): User
-    
-    # Check existence
     emailExist(email: String!): ExistUser
     phoneExist(phone: String!): ExistUser
     Deactivate(isActive: Boolean!, email: String!): User
-    
-    # Coupon
+
+    # Coupon mutation (line 776-780)
     coupon(coupon: String!, restaurantId: ID!): CouponResult
-    createCoupon(couponInput: CouponInput!): Coupon
-    editCoupon(couponInput: CouponInput!): Coupon
-    deleteCoupon(id: ID!): Boolean
-    
-    # Chat
+
+    # Chat (line 782-795)
     sendChatMessage(orderId: ID!, message: ChatMessageInput!): ChatResult
-    
-    # Activity
+
+    # Activity (line 797)
     createActivity: Boolean
 
-    # Admin Operations
+    # Admin Restaurant (line 800-842)
     createRestaurant(restaurant: RestaurantInput!, owner: ID!): Restaurant
     editRestaurant(restaurant: RestaurantInput!): Restaurant
     deleteRestaurant(id: ID!): Boolean
@@ -666,8 +753,17 @@ const typeDefs = gql`
     updateRestaurantDelivery(id: ID!, minDeliveryFee: Float, deliveryDistance: Float, deliveryFee: Float): Result
     updateRestaurantBussinessDetails(id: ID!, bussinessDetails: String!): Result
     updateDeliveryBoundsAndLocation(id: ID!, location: LocationInput, bounds: [[[Float]]], boundType: String): Result
-    
-    # Configurations
+
+    # Admin Coupon (line 845-855)
+    createCoupon(couponInput: CouponInput!): Coupon
+    editCoupon(couponInput: CouponInput!): Coupon
+    deleteCoupon(id: ID!): Boolean
+
+    # Admin Order/Dispatch (line 858-910)
+    updateStatus(id: ID!, orderStatus: String!): Order
+    assignRider(id: ID!, riderId: ID!): Order
+
+    # Admin Configuration (line 913-980)
     saveEmailConfiguration(configurationInput: ConfigurationInput!): Configuration
     saveFormEmailConfiguration(configurationInput: ConfigurationInput!): Configuration
     saveSendGridConfiguration(configurationInput: ConfigurationInput!): Configuration
@@ -685,11 +781,15 @@ const typeDefs = gql`
     saveTwilioConfiguration(configurationInput: ConfigurationInput!): Configuration
     saveVerificationsToggle(configurationInput: ConfigurationInput!): Configuration
     saveCurrencyConfiguration(configurationInput: ConfigurationInput!): Configuration
-    
-    # Withdraws
+
+    # Withdraw (line 949-964)
     saveStatusWithdrawRequest(id: ID!, status: String!, paymentDetails: String): WithdrawRequest
     createWithdrawRequest(userType: String!, userId: ID!, amount: Float!, restaurantId: ID): WithdrawRequest
   }
+
+  # ============================================================
+  #  SUBSCRIPTION - 4 resolvers (matched 1:1 from resolvers.js)
+  # ============================================================
 
   type Subscription {
     subscriptionOrder(id: ID!): Order
