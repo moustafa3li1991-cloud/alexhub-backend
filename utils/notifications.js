@@ -1,14 +1,27 @@
-const { Expo } = require('expo-server-sdk');
-const expo = new Expo();
+/**
+ * utils/notifications.js
+ */
+
+// حلينا مشكلة الـ ESM عن طريق تحميل المكتبة وقت التشغيل فقط
+let Expo;
+let expoInstance;
+
+const getExpoClient = async () => {
+  if (!expoInstance) {
+    // Dynamic import for ES Modules in CommonJS
+    const sdk = await import('expo-server-sdk');
+    Expo = sdk.Expo;
+    expoInstance = new Expo();
+  }
+  return { Expo, expoInstance };
+};
 
 /**
  * Send push notifications to multiple recipients
- * @param {Array} tokens - Array of push tokens (ExponentPushToken[xxx])
- * @param {String} title - Notification title
- * @param {String} body - Notification body
- * @param {Object} data - Custom data to send
  */
 const sendNotification = async (tokens, title, body, data = {}) => {
+  const { Expo, expoInstance: expo } = await getExpoClient();
+  
   let messages = [];
   
   for (let pushToken of tokens) {
