@@ -90,6 +90,11 @@ async function startServer() {
     })
   })
 
+  // Wake-up endpoint for Render/UptimeRobot
+  app.get('/ping', (req, res) => {
+    res.send('I am awake!');
+  });
+
   // GraphQL Endpoint
   app.use('/graphql', expressMiddleware(server, {
     context: async ({ req }) => {
@@ -104,7 +109,22 @@ async function startServer() {
     console.log(`\n🚀 AlexHub Backend Ready!`)
     console.log(`📡 GraphQL:  http://localhost:${PORT}/graphql`)
     console.log(`⚡ WebSocket: ws://localhost:${PORT}/graphql`)
-    console.log(`🏥 Health:   http://localhost:${PORT}/\n`)
+    console.log(`🏥 Health:   http://localhost:${PORT}/`)
+    console.log(`⏰ Keep-awake: http://localhost:${PORT}/ping\n`)
+
+    // Self-pinging logic (Self-Pinger)
+    const SERVER_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+    setInterval(() => {
+      const http = require('http');
+      const https = require('https');
+      const client = SERVER_URL.startsWith('https') ? https : http;
+      
+      client.get(`${SERVER_URL}/ping`, (res) => {
+        console.log(`⏰ Self-ping status: ${res.statusCode} (Keeping the engine warm...)`);
+      }).on('error', (err) => {
+        console.error('❌ Self-ping failed:', err.message);
+      });
+    }, 10 * 60 * 1000); // Every 10 minutes
   })
 }
 

@@ -74,6 +74,7 @@ const OrderSchema = new mongoose.Schema({
   isRiderRinged: { type: Boolean, default: false },
   review: { type: mongoose.Schema.Types.ObjectId, ref: 'Review' },
   coupon: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
+  zone: { type: mongoose.Schema.Types.ObjectId, ref: 'Zone' },
 }, { timestamps: true })
 
 // Auto-generate orderId

@@ -53,6 +53,25 @@ const OfferSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true },
 }, { timestamps: true })
 
+// Banner Model
+const BannerSchema = new mongoose.Schema({
+  title: { type: String },
+  description: { type: String },
+  action: { type: String },
+  screen: { type: String },
+  file: { type: String },
+  parameters: { type: String },
+}, { timestamps: true })
+
+// ShopType Model
+const ShopTypeSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  image: { type: String },
+  isActive: { type: Boolean, default: true },
+}, { timestamps: true })
+
+const WithdrawRequest = require('./WithdrawRequest')
+
 module.exports = {
   Review: mongoose.model('Review', ReviewSchema),
   Zone: mongoose.model('Zone', ZoneSchema),
@@ -60,4 +79,7 @@ module.exports = {
   Coupon: mongoose.model('Coupon', CouponSchema),
   Section: mongoose.model('Section', SectionSchema),
   Offer: mongoose.model('Offer', OfferSchema),
+  Banner: mongoose.model('Banner', BannerSchema),
+  ShopType: mongoose.model('ShopType', ShopTypeSchema),
+  WithdrawRequest
 }

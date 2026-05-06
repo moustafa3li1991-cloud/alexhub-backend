@@ -45,6 +45,9 @@ const typeDefs = gql`
     favourite: [ID]
     userType: String
     password: String
+    status: String
+    lastLogin: String
+    notes: String
     createdAt: String
     updatedAt: String
   }
@@ -123,6 +126,7 @@ const typeDefs = gql`
 
   type Restaurant {
     _id: ID!
+    unique_restaurant_id: String
     orderId: Int
     orderPrefix: String
     name: String!
@@ -234,6 +238,16 @@ const typeDefs = gql`
     shopType: String
   }
 
+  type Banner {
+    _id: ID
+    title: String
+    description: String
+    action: String
+    screen: String
+    file: String
+    parameters: String
+  }
+
   type Zone {
     _id: ID
     title: String
@@ -317,6 +331,9 @@ const typeDefs = gql`
     totalWalletAmount: Float
     withdrawnWalletAmount: Float
     accountNumber: String
+    vehicleType: String
+    assigned: [String]
+    zone: Zone
     createdAt: String
     updatedAt: String
   }
@@ -358,29 +375,76 @@ const typeDefs = gql`
     review: Review
     createdAt: String
     updatedAt: String
+    zone: Zone
+  }
+
+  type OrderPaginated {
+    totalCount: Int
+    currentPage: Int
+    totalPages: Int
+    prevPage: Int
+    nextPage: Int
+    orders: [Order]
   }
 
   type Configuration {
     _id: ID
+    email: String
+    emailName: String
+    password: String
+    enableEmail: Boolean
+    clientId: String
+    clientSecret: String
+    sandbox: Boolean
+    publishableKey: String
+    secretKey: String
     currency: String
     currencySymbol: String
     deliveryRate: Float
+    twilioAccountSid: String
+    twilioAuthToken: String
+    twilioPhoneNumber: String
     twilioEnabled: Boolean
+    skipWhatsAppOTP: Boolean
+    twilioWhatsAppNumber: String
+    formEmail: String
+    sendGridApiKey: String
+    sendGridEnabled: Boolean
+    sendGridEmail: String
+    sendGridEmailName: String
+    sendGridPassword: String
+    dashboardSentryUrl: String
+    webSentryUrl: String
+    apiSentryUrl: String
+    customerAppSentryUrl: String
+    restaurantAppSentryUrl: String
+    riderAppSentryUrl: String
+    googleApiKey: String
+    cloudinaryUploadUrl: String
+    cloudinaryApiKey: String
+    webAmplitudeApiKey: String
+    appAmplitudeApiKey: String
+    webClientID: String
     androidClientID: String
     iOSClientID: String
-    appAmplitudeApiKey: String
-    googleApiKey: String
     expoClientID: String
-    customerAppSentryUrl: String
+    googleMapLibraries: String
+    googleColor: String
     termsAndConditions: String
     privacyPolicy: String
     testOtp: String
-    skipMobileVerification: Boolean
+    firebaseKey: String
+    authDomain: String
+    projectId: String
+    storageBucket: String
+    msgSenderId: String
+    appId: String
+    measurementId: String
+    isPaidVersion: Boolean
     skipEmailVerification: Boolean
+    skipMobileVerification: Boolean
     costType: String
-    password: String
-    publishableKey: String
-    secretKey: String
+    vapidKey: String
     googlePlacesApiBaseUrl: String
   }
 
@@ -461,25 +525,175 @@ const typeDefs = gql`
     name: String
   }
 
+  type DashboardUsers {
+    usersCount: Int
+    vendorsCount: Int
+    restaurantsCount: Int
+    ridersCount: Int
+  }
+
+  type DashboardPercentageChange {
+    usersPercent: Float
+    vendorsPercent: Float
+    restaurantsPercent: Float
+    ridersPercent: Float
+  }
+
+  type DashboardUsersByYear {
+    usersCount: [Int]
+    vendorsCount: [Int]
+    restaurantsCount: [Int]
+    ridersCount: [Int]
+    percentageChange: DashboardPercentageChange
+  }
+
+  type DashboardChartData {
+    value: Float
+    label: String
+  }
+
+  type Vendor {
+    unique_id: String
+    _id: ID
+    email: String
+    userType: String
+    isActive: Boolean
+    name: String
+    image: String
+    restaurants: [Restaurant]
+    firstName: String
+    lastName: String
+    phoneNumber: String
+  }
+
+  type RestaurantPaginated {
+    data: [Restaurant]
+    totalCount: Int
+    currentPage: Int
+    totalPages: Int
+  }
+
+  type ShopType {
+    _id: ID
+    name: String
+    image: String
+    isActive: Boolean
+  }
+
+  type ShopTypePaginated {
+    data: [ShopType]
+    total: Int
+    page: Int
+    pageSize: Int
+    totalPages: Int
+    hasNextPage: Boolean
+    hasPrevPage: Boolean
+  }
+
+  input PaginationInput {
+    pageNo: Int
+    pageSize: Int
+  }
+
+  input FetchShopTypeFilter {
+    isActive: Boolean
+  }
+
+  input FetchUniqueShopTypeInput {
+    _id: ID
+  }
+
+  type PaginationResponse {
+    total: Int
+  }
+
+  type WithdrawRequest {
+    _id: ID
+    requestId: String
+    requestAmount: Float
+    requestTime: String
+    status: String
+    createdAt: String
+    rider: Rider
+    store: Restaurant
+  }
+
+  type WithdrawRequestsResponse {
+    message: String
+    pagination: PaginationResponse
+    data: [WithdrawRequest]
+    success: Boolean
+  }
+
+  enum UserTypeEnum {
+    VENDOR
+    RIDER
+  }
+
   type Query {
+    # Dashboard Queries
+    getDashboardUsers: DashboardUsers
+    getDashboardUsersByYear(year: Int!): DashboardUsersByYear
+    getDashboardOrdersByType: [DashboardChartData]
+    getDashboardSalesByType: [DashboardChartData]
+
     profile: User
     users: [User]
+    user(id: ID!): User
+    
+    vendors: [Vendor]
+    getVendor(id: String!): Vendor
+    
+    restaurants: [Restaurant]
+    restaurantsPaginated(page: Int, limit: Int, search: String): RestaurantPaginated
+    
+    riders: [Rider]
+    availableRiders: [Rider]
+    ridersByZone(id: String!): [Rider]
+
     order(id: String!): Order
     orders(offset: Int): [Order]
+    allOrders(page: Int): [Order]
+    allOrdersPaginated(page: Int, rows: Int, dateKeyword: String, starting_date: String, ending_date: String, orderStatus: [String], search: String): OrderPaginated
+    allOrdersWithoutPagination(dateKeyword: String, starting_date: String, ending_date: String): [Order]
+    getActiveOrders(restaurantId: ID, page: Int, rowsPerPage: Int, actions: [String], search: String): OrderPaginated
+    ordersByRestId(restaurant: String!, page: Int, rows: Int, search: String): [Order]
+    ordersByRestIdWithoutPagination(restaurant: String!, search: String): [Order]
+
     restaurant(id: String): Restaurant
     nearByRestaurants(latitude: Float, longitude: Float, shopType: String): NearbyRestaurants
     nearByRestaurantsPreview(latitude: Float, longitude: Float, shopType: String): NearbyRestaurantsPreview
     topRatedVendors(latitude: Float!, longitude: Float!): [Restaurant]
     topRatedVendorsPreview(latitude: Float!, longitude: Float!): [RestaurantPreview]
     cuisines: [Cuisine]
+    banners: [Banner]
+    coupons: [Coupon]
+    fetchShopTypes(filter: FetchShopTypeFilter, pagination: PaginationInput): ShopTypePaginated
+    fetchShopTypeByUnique(dto: FetchUniqueShopTypeInput): ShopType
+    withdrawRequests(userType: UserTypeEnum, userId: String, pagination: PaginationInput, search: String): WithdrawRequestsResponse
+
     rider(id: String): Rider
     configuration: Configuration
     reviewsByRestaurant(restaurant: String!): ReviewsResult
     getCountryByIso(iso: String!): Country
   }
 
+  type OwnerAuthData {
+    userId: ID
+    token: String
+    email: String
+    userType: String
+    shopType: String
+    permissions: [String]
+    userTypeId: ID
+    image: String
+    name: String
+    restaurants: [Restaurant]
+  }
+
   type Mutation {
     # Auth
+    ownerLogin(email: String!, password: String!): OwnerAuthData
     login(email: String, password: String, type: String!, appleId: String, name: String, notificationToken: String): AuthData
     createUser(phone: String, email: String, password: String, name: String, notificationToken: String, appleId: String, emailIsVerified: Boolean, isPhoneExists: Boolean): AuthData
     updateUser(name: String!, phone: String, phoneIsVerified: Boolean, emailIsVerified: Boolean): User
@@ -537,6 +751,209 @@ const typeDefs = gql`
     
     # Activity
     createActivity(groupId: String!, module: String!, screenPath: String!, type: String!, details: String!): Boolean
+
+    # === ADMIN RESTAURANT MUTATIONS ===
+    createRestaurant(restaurant: RestaurantInput!, owner: ID!): Restaurant
+    editRestaurant(restaurant: RestaurantProfileInput!): Restaurant
+    deleteRestaurant(id: String!): Restaurant
+    hardDeleteRestaurant(id: String!): Boolean
+    updateRestaurantDelivery(id: ID!, minDeliveryFee: Float, deliveryDistance: Float, deliveryFee: Float): ResultWithData
+    updateRestaurantBussinessDetails(id: String!, bussinessDetails: BussinessDetailsInput): ResultWithData
+    updateDeliveryBoundsAndLocation(id: ID!, boundType: String!, bounds: [[[Float!]]], circleBounds: CircleBoundsInput, location: LocationInput!, address: String, postCode: String, city: String): ResultWithData
+
+    # === ADMIN COUPON MUTATIONS ===
+    createCoupon(couponInput: CouponInput!): Coupon
+    editCoupon(couponInput: CouponInput!): Coupon
+    deleteCoupon(id: String!): Boolean
+
+    # === ADMIN ORDER/DISPATCH MUTATIONS ===
+    updateStatus(id: String!, orderStatus: String!): Order
+    assignRider(id: String!, riderId: String!): Order
+
+    # === ADMIN CONFIGURATION MUTATIONS ===
+    saveEmailConfiguration(configurationInput: EmailConfigurationInput!): Configuration
+    saveFormEmailConfiguration(configurationInput: FormEmailConfigurationInput!): Configuration
+    saveSendGridConfiguration(configurationInput: SendGridConfigurationInput!): Configuration
+    saveFirebaseConfiguration(configurationInput: FirebaseConfigurationInput!): Configuration
+    saveSentryConfiguration(configurationInput: SentryConfigurationInput!): Configuration
+    saveGoogleApiKeyConfiguration(configurationInput: GoogleApiKeyConfigurationInput!): Configuration
+    saveCloudinaryConfiguration(configurationInput: CloudinaryConfigurationInput!): Configuration
+    saveAmplitudeApiKeyConfiguration(configurationInput: AmplitudeApiKeyConfigurationInput!): Configuration
+    saveGoogleClientIDConfiguration(configurationInput: GoogleClientIDConfigurationInput!): Configuration
+    saveWebConfiguration(configurationInput: WebConfigurationInput!): Configuration
+    saveAppConfigurations(configurationInput: AppConfigurationsInput!): Configuration
+    saveDeliveryRateConfiguration(configurationInput: DeliveryCostConfigurationInput!): Configuration
+    savePaypalConfiguration(configurationInput: PaypalConfigurationInput!): Configuration
+    saveStripeConfiguration(configurationInput: StripeConfigurationInput!): Configuration
+    saveTwilioConfiguration(configurationInput: TwilioConfigurationInput!): Configuration
+    saveVerificationsToggle(configurationInput: VerificationConfigurationInput!): Configuration
+    saveCurrencyConfiguration(configurationInput: CurrencyConfigurationInput!): Configuration
+    saveStatusWithdrawRequest(id: ID!, status: String!, paymentDetails: String): WithdrawRequest
+    createWithdrawRequest(userType: String!, userId: ID!, amount: Float!, restaurantId: ID): WithdrawRequest
+  }
+
+  type ResultWithData {
+    success: Boolean
+    message: String
+    data: Restaurant
+  }
+
+  input RestaurantInput {
+    name: String!
+    image: String
+    username: String!
+    password: String!
+    orderPrefix: String
+    phone: String
+    address: String
+    deliveryTime: Int
+    minimumOrder: Float
+    shopType: String
+    location: LocationInput
+    cuisines: [String]
+  }
+
+  input RestaurantProfileInput {
+    _id: ID!
+    name: String
+    phone: String
+    image: String
+    logo: String
+    slug: String
+    address: String
+    username: String
+    password: String
+    location: LocationInput
+    isAvailable: Boolean
+    minimumOrder: Float
+    tax: Float
+    openingTimes: [OpeningTimeInput]
+    shopType: String
+  }
+
+  input OpeningTimeInput {
+    day: String
+    times: [TimeSlotInput]
+  }
+
+  input TimeSlotInput {
+    startTime: String
+    endTime: String
+  }
+
+  input BussinessDetailsInput {
+    bankName: String
+    accountName: String
+    accountCode: String
+    accountNumber: String
+    bussinessRegNo: String
+    companyRegNo: String
+    taxRate: Float
+  }
+
+  input CircleBoundsInput {
+    radius: Float
+  }
+
+  input CouponInput {
+    _id: ID
+    title: String
+    discount: Float
+    enabled: Boolean
+    startDate: String
+    endDate: String
+    lifeTimeActive: Boolean
+  }
+
+  # Configuration Inputs
+  input EmailConfigurationInput {
+    email: String
+    emailName: String
+    password: String
+    enableEmail: Boolean
+  }
+  input FormEmailConfigurationInput {
+    formEmail: String
+  }
+  input SendGridConfigurationInput {
+    sendGridApiKey: String
+    sendGridEnabled: Boolean
+    sendGridEmail: String
+    sendGridEmailName: String
+    sendGridPassword: String
+  }
+  input FirebaseConfigurationInput {
+    firebaseKey: String
+    authDomain: String
+    projectId: String
+    storageBucket: String
+    msgSenderId: String
+    appId: String
+    measurementId: String
+    vapidKey: String
+  }
+  input SentryConfigurationInput {
+    dashboardSentryUrl: String
+    webSentryUrl: String
+    apiSentryUrl: String
+    customerAppSentryUrl: String
+    restaurantAppSentryUrl: String
+    riderAppSentryUrl: String
+  }
+  input GoogleApiKeyConfigurationInput {
+    googleApiKey: String
+  }
+  input CloudinaryConfigurationInput {
+    cloudinaryUploadUrl: String
+    cloudinaryApiKey: String
+  }
+  input AmplitudeApiKeyConfigurationInput {
+    webAmplitudeApiKey: String
+    appAmplitudeApiKey: String
+  }
+  input GoogleClientIDConfigurationInput {
+    webClientID: String
+    androidClientID: String
+    iOSClientID: String
+    expoClientID: String
+  }
+  input WebConfigurationInput {
+    googleMapLibraries: String
+    googleColor: String
+  }
+  input AppConfigurationsInput {
+    termsAndConditions: String
+    privacyPolicy: String
+    testOtp: String
+  }
+  input DeliveryCostConfigurationInput {
+    deliveryRate: Float
+    costType: String
+  }
+  input PaypalConfigurationInput {
+    clientId: String
+    clientSecret: String
+    sandbox: Boolean
+  }
+  input StripeConfigurationInput {
+    publishableKey: String
+    secretKey: String
+  }
+  input TwilioConfigurationInput {
+    twilioAccountSid: String
+    twilioAuthToken: String
+    twilioPhoneNumber: String
+    twilioEnabled: Boolean
+    twilioWhatsAppNumber: String
+  }
+  input VerificationConfigurationInput {
+    skipEmailVerification: Boolean
+    skipMobileVerification: Boolean
+    skipWhatsAppOTP: Boolean
+  }
+  input CurrencyConfigurationInput {
+    currency: String
+    currencySymbol: String
   }
 
   input ReviewInput {
