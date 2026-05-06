@@ -33,69 +33,36 @@ const getUser = (token) => {
   }
 }
 
-// ==================== SETUP ====================
-async function startServer() {
-  const app = express()
-  const httpServer = createServer(app)
+const app = express()
+const httpServer = createServer(app)
+const schema = makeExecutableSchema({ typeDefs, resolvers })
 
-  // Build schema
-  const schema = makeExecutableSchema({ typeDefs, resolvers })
+// Apollo Server
+const server = new ApolloServer({
+  schema,
+  plugins: [
+    ApolloServerPluginDrainHttpServer({ httpServer }),
+  ],
+  introspection: true,
+})
 
-  // WebSocket Server (for Subscriptions)
-  const wsServer = new WebSocketServer({
-    server: httpServer,
-    path: '/graphql',
-  })
-
-  const serverCleanup = useServer({
-    schema,
-    context: async (ctx) => {
-      const token = ctx.connectionParams?.Authorization || ctx.connectionParams?.authorization
-      const user = getUser(token)
-      return { user }
-    },
-  }, wsServer)
-
-  // Apollo Server
-  const server = new ApolloServer({
-    schema,
-    plugins: [
-      ApolloServerPluginDrainHttpServer({ httpServer }),
-      {
-        async serverWillStart() {
-          return {
-            async drainServer() {
-              await serverCleanup.dispose()
-            },
-          }
-        },
-      },
-    ],
-    introspection: true,
-  })
-
+async function init() {
   await server.start()
 
-  // Express Middleware
   app.use(cors({ origin: '*', credentials: true }))
   app.use(express.json())
 
-  // Health Check
   app.get('/', (req, res) => {
     res.json({
-      status: '🚀 AlexHub Backend Running!',
-      version: '1.0.0',
-      graphql: `http://localhost:${PORT}/graphql`,
-      ws: `ws://localhost:${PORT}/graphql`
+      status: '🚀 AlexHub Backend Running on Vercel!',
+      version: '1.0.0'
     })
   })
 
-  // Wake-up endpoint for Render/UptimeRobot
   app.get('/ping', (req, res) => {
     res.send('I am awake!');
   });
 
-  // GraphQL Endpoint
   app.use('/graphql', expressMiddleware(server, {
     context: async ({ req }) => {
       const token = req.headers.authorization
@@ -103,29 +70,21 @@ async function startServer() {
       return { user }
     },
   }))
+}
 
-  // Start
-  httpServer.listen(PORT, () => {
-    console.log(`\n🚀 AlexHub Backend Ready!`)
-    console.log(`📡 GraphQL:  http://localhost:${PORT}/graphql`)
-    console.log(`⚡ WebSocket: ws://localhost:${PORT}/graphql`)
-    console.log(`🏥 Health:   http://localhost:${PORT}/`)
-    console.log(`⏰ Keep-awake: http://localhost:${PORT}/ping\n`)
+// Handle Local Development
+if (process.env.NODE_ENV !== 'production') {
+  init().then(() => {
+    // WebSocket only for local
+    const wsServer = new WebSocketServer({ server: httpServer, path: '/graphql' })
+    useServer({ schema }, wsServer)
 
-    // Self-pinging logic (Self-Pinger)
-    const SERVER_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
-    setInterval(() => {
-      const http = require('http');
-      const https = require('https');
-      const client = SERVER_URL.startsWith('https') ? https : http;
-      
-      client.get(`${SERVER_URL}/ping`, (res) => {
-        console.log(`⏰ Self-ping status: ${res.statusCode} (Keeping the engine warm...)`);
-      }).on('error', (err) => {
-        console.error('❌ Self-ping failed:', err.message);
-      });
-    }, 10 * 60 * 1000); // Every 10 minutes
+    httpServer.listen(PORT, () => {
+      console.log(`\n🚀 AlexHub Local Ready at http://localhost:${PORT}/graphql`)
+    })
   })
 }
 
-startServer().catch(console.error)
+// For Vercel
+init().catch(console.error)
+module.exports = app
