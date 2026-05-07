@@ -397,7 +397,8 @@ const resolvers = {
       const normalizedEmail = email ? email.toLowerCase().trim() : '';
       
       // Mocked Super Admin login for alexhub
-      if (normalizedEmail === 'admin@alexhub.com' && password === '123123') {
+      const adminPass = process.env.ADMIN_PASSWORD || 'AlexHub_Secure_Pass_2026!';
+      if (normalizedEmail === 'admin@alexhub.com' && password === adminPass) {
         const token = generateToken('super-admin-id')
         return {
           userId: 'super-admin-id',
